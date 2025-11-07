@@ -1,0 +1,55 @@
+name: Python CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      first_number:
+        description: "Enter first number"
+        required: true
+      second_number:
+        description: "Enter second number"
+        required: true
+      confirm_deploy:
+        description: "Type 'yes' to confirm deployment"
+        required: true
+        default: "no"
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        env:
+          A: ${{ github.event.inputs.first_number }}
+          B: ${{ github.event.inputs.second_number }}
+        run: |
+          echo "Running tests with A=$A and B=$B"
+          pytest tests/ --maxfail=1 --disable-warnings -q
+
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm_deploy == 'yes' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Application
+        run: |
+          chmod +x deploy.sh
+          ./deploy.sh
