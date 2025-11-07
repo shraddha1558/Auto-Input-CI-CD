@@ -38,7 +38,7 @@ jobs:
           B: ${{ github.event.inputs.second_number }}
         run: |
           echo "Running tests with A=$A and B=$B"
-          pytest tests/ --maxfail=1 --disable-warnings -q
+          pytest test/ --maxfail=1 --disable-warnings -q
 
   deploy:
     needs: build-test
